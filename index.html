@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Casa da Água - Entrega Rápida</title>
+  <style>
+    :root {
+      --primaria: #00828b;
+      --secundaria: #b7b7b7;
+      --branco: #ffffff;
+      --cinza-claro: #f9f9f9;
+      --texto: #000000;
+    }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: var(--cinza-claro);
+      color: var(--texto);
+    }
+    header {
+      background-color: var(--primaria);
+      padding: 20px;
+      color: var(--branco);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    header h1 {
+      font-size: 1.8em;
+    }
+    .cart-icon {
+      font-size: 1.8em;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+    .cart-icon:hover {
+      transform: scale(1.1);
+    }
+    section.hero {
+      text-align: center;
+      padding: 60px 20px;
+      background-image: linear-gradient(to right, #00828b, #00828b);
+    }
+    section.hero h2 {
+      font-size: 2.4em;
+      margin-bottom: 15px;
+      color: var(--secundaria);
+    }
+    .produtos-container {
+      max-width: 700px;
+      margin: 30px auto;
+      background: var(--branco);
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+    .produtos-container h2 {
+      margin-bottom: 15px;
+    }
+    select, input, button {
+      width: 100%;
+      padding: 12px;
+      margin-top: 12px;
+      border-radius: 6px;
+      border: 1px solid #03681a;
+      font-size: 1em;
+    }
+    button.adicionar {
+      background-color: var(--secundaria);
+      color: var(--branco);
+      border: none;
+      font-weight: bold;
+      transition: background 0.3s;
+    }
+    button.adicionar:hover {
+      background-color: #055c12;
+    }
+    .carrinho-overlay {
+      position: fixed;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      max-width: 400px;
+      height: 100%;
+      background-color: var(--branco);
+      box-shadow: 2px 0 10px rgba(0,0,0,0.2);
+      padding: 20px;
+      overflow-y: auto;
+      transition: left 0.3s ease-in-out;
+      z-index: 9999;
+    }
+    .carrinho-overlay.active {
+      left: 0;
+    }
+    .fechar-carrinho {
+      background: none;
+      border: none;
+      font-size: 2em;
+      float: right;
+      color: #999;
+      cursor: pointer;
+    }
+    .retirada-option {
+      display: flex;
+      align-items: center;
+      margin-top: 10px;
+    }
+    button.finalizar {
+      background-color: var(--primaria);
+      color: var(--branco);
+      border: none;
+      font-weight: bold;
+      margin-top: 20px;
+      transition: background 0.3s;
+    }
+    button.finalizar:hover {
+      background-color: #0097a7;
+    }
+    footer {
+      text-align: center;
+      padding: 20px;
+      background-color: var(--branco);
+      margin-top: 40px;
+      font-size: 0.9em;
+      color: #777;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <span class="cart-icon" onclick="mostrarCarrinho()">🛒</span>
+  </header>
+  <section class="hero">
+    <h2>Casa da Água</h2>
+    <p>Selecione os produtos abaixo e finalize seu pedido via WhatsApp.</p>
+  </section>
+  <div class="produtos-container">
+    <h2>Adicionar Produto</h2>
+    <select id="selecionar-produto"></select>
+    <input type="number" id="quantidade" placeholder="Quantidade" min="1" value="1">
+    <button class="adicionar" onclick="adicionarProdutoSelecionado()">Adicionar ao Carrinho</button>
+  </div>
+  <div class="carrinho-overlay" id="carrinho">
+    <button class="fechar-carrinho" onclick="fecharCarrinho()">&times;</button>
+    <h2>Seu Carrinho</h2>
+    <ul id="carrinho-lista"></ul>
+    <p><strong>Total:</strong> R$ <span id="total">0.00</span></p>
+    <h3>Forma de Pagamento</h3>
+    <select id="pagamento">
+      <option value="pix">Pix</option>
+      <option value="cartao">Cartão</option>
+      <option value="dinheiro">Dinheiro</option>
+      <option value="gratis">Grátis</option>
+    </select>
+    <div id="troco-container">
+      <label for="troco">Valor para troco:</label>
+      <input type="number" id="troco" placeholder="Digite o valor...">
+    </div>
+    <div id="endereco-container">
+      <h3>Endereço de Entrega</h3>
+      <input type="text" id="endereco" placeholder="Digite seu endereço completo...">
+    </div>
+    <div class="retirada-option">
+      <label for="retirada-check">Retirada no local (R$2,00 de desconto por unidade)</label>
+      <input type="checkbox" id="retirada-check">
+    </div>
+    <button class="finalizar" onclick="finalizarPedido()">Finalizar Pedido via WhatsApp</button>
+  </div>
+  <footer>
+    <p>&copy; 2025 Casa da Água. Todos os direitos reservados.</p>
+  </footer>
+  <script>
+    const produtos = [
+      { nome: "Naturágua", preco: 11 },
+      { nome: "Cristalina", preco: 11 },
+      { nome: "Pureza", preco: 9 },
+      { nome: "Santa Maria", preco: 10 },
+      { nome: "Potiguar", preco: 8 },
+      { nome: "Natal", preco: 8.5 },
+      { nome: "Ster Bom", preco: 9.5 },
+    ];
+    const carrinho = [];
+    const carrinhoDiv = document.getElementById('carrinho');
+    const carrinhoLista = document.getElementById('carrinho-lista');
+    const totalSpan = document.getElementById('total');
+    const pagamentoSelect = document.getElementById('pagamento');
+    const trocoContainer = document.getElementById('troco-container');
+    const trocoInput = document.getElementById('troco');
+    const produtoSelect = document.getElementById('selecionar-produto');
+    const retiradaCheck = document.getElementById('retirada-check');
+    const enderecoContainer = document.getElementById('endereco-container');
+    const enderecoInput = document.getElementById('endereco');
+
+    function mostrarCarrinho() {
+      carrinhoDiv.classList.add('active');
+    }
+
+    function fecharCarrinho() {
+      carrinhoDiv.classList.remove('active');
+    }
+
+    pagamentoSelect.addEventListener('change', () => {
+      trocoContainer.style.display = pagamentoSelect.value === 'dinheiro' ? 'block' : 'none';
+      atualizarCarrinho(); // Recalcula o total se for "grátis"
+    });
+
+    retiradaCheck.addEventListener('change', () => {
+      enderecoContainer.style.display = retiradaCheck.checked ? 'none' : 'block';
+      atualizarCarrinho();
+    });
+
+    function preencherMenuProdutos() {
+      produtos.forEach((produto, index) => {
+        const option = document.createElement('option');
+        option.value = index;
+        option.textContent = `${produto.nome} - R$ ${produto.preco.toFixed(2)}`;
+        produtoSelect.appendChild(option);
+      });
+    }
+
+    function adicionarProdutoSelecionado() {
+      const index = produtoSelect.value;
+      const quantidade = parseInt(document.getElementById('quantidade').value);
+      if (index === '' || isNaN(quantidade) || quantidade < 1) return;
+      for (let i = 0; i < quantidade; i++) {
+        carrinho.push(produtos[index]);
+      }
+      atualizarCarrinho();
+    }
+
+    function atualizarCarrinho() {
+      carrinhoLista.innerHTML = '';
+      let total = 0;
+      const retirada = retiradaCheck.checked;
+      const pagamento = pagamentoSelect.value;
+
+      const agrupado = {};
+      carrinho.forEach(item => {
+        if (!agrupado[item.nome]) {
+          agrupado[item.nome] = { ...item, quantidade: 0 };
+        }
+        agrupado[item.nome].quantidade++;
+      });
+
+      for (const nome in agrupado) {
+        const item = agrupado[nome];
+        const precoFinal = retirada ? item.preco - 2 : item.preco;
+        const precoTotal = pagamento === 'gratis' ? 0 : precoFinal * item.quantidade;
+        const li = document.createElement('li');
+        li.textContent = `${item.nome} x${item.quantidade} - R$ ${precoTotal.toFixed(2)}`;
+        carrinhoLista.appendChild(li);
+        total += precoTotal;
+      }
+
+      totalSpan.textContent = pagamento === 'gratis' ? '0.00' : total.toFixed(2);
+    }
+
+    function finalizarPedido() {
+      const pagamento = pagamentoSelect.value;
+      const endereco = enderecoInput.value;
+      const troco = trocoInput.value;
+      const retirada = retiradaCheck.checked;
+
+      if (!endereco && !retirada) {
+        alert("Por favor, preencha o endereço.");
+        return;
+      }
+
+      let mensagem = '*Pedido de Água*%0A';
+      let total = 0;
+
+      const agrupado = {};
+      carrinho.forEach(item => {
+        if (!agrupado[item.nome]) {
+          agrupado[item.nome] = { ...item, quantidade: 0 };
+        }
+        agrupado[item.nome].quantidade++;
+      });
+
+      for (const nome in agrupado) {
+        const item = agrupado[nome];
+        const precoFinal = retirada ? item.preco - 2 : item.preco;
+        const precoTotal = pagamento === 'gratis' ? 0 : precoFinal * item.quantidade;
+        mensagem += `- ${item.nome} x${item.quantidade}: R$ ${precoTotal.toFixed(2)}%0A`;
+        total += precoTotal;
+      }
+
+      mensagem += `%0ATotal: R$ ${pagamento === 'gratis' ? '0.00' : total.toFixed(2)}`;
+      mensagem += `%0APagamento: ${pagamento}`;
+      if (pagamento === 'dinheiro' && troco) {
+        mensagem += `%0ATroco para: R$ ${parseFloat(troco).toFixed(2)}`;
+      }
+      mensagem += `%0AEntrega: ${retirada ? 'Retirada no local' : endereco}`;
+
+      const numero = '5584986005101';
+      const url = `https://wa.me/${numero}?text=${mensagem}`;
+      window.open(url, '_blank');
+
+      // Limpa carrinho após envio
+      carrinho.length = 0;
+      atualizarCarrinho();
+      fecharCarrinho();
+      alert("Pedido enviado via WhatsApp!");
+    }
+
+    preencherMenuProdutos();
+  </script>
+</body>
+</html>
