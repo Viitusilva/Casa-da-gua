@@ -252,14 +252,38 @@
         const precoFinal = retirada ? item.preco - 2 : item.preco;
         const precoTotal = pagamento === 'gratis' ? 0 : precoFinal * item.quantidade;
         const li = document.createElement('li');
+         const botaoApagar = document.createElement('button');
+         botaoApagar.textContent = '🗑️';
+         botaoApagar.style.backgroundColor = '#00BCD4';
+         botaoApagar.style.color = 'white';
+         botaoApagar.style.border = 'none';
+         botaoApagar.style.borderRadius = '15px';
+         botaoApagar.style.padding = '5px 5px';
+         botaoApagar.style.cursor = 'pointer';
+         botaoApagar.style.fontSize = '12px';
+         botaoApagar.style.width = '8%';
+         botaoApagar.style.marginLeft = '50px';
+         botaoApagar.addEventListener('click', () => {
+           removerItemCarrinho(item.nome);
+         });
+        
         li.textContent = `${item.nome} x${item.quantidade} - R$ ${precoTotal.toFixed(2)}`;
+        li.appendChild(botaoApagar);
         carrinhoLista.appendChild(li);
         total += precoTotal;
       }
 
       totalSpan.textContent = pagamento === 'gratis' ? '0.00' : total.toFixed(2);
     }
-
+    function removerItemCarrinho(nomeItem) {
+  
+        for (let i = carrinho.length - 1; i >= 0; i--) {
+        if (carrinho[i].nome === nomeItem) {
+        carrinho.splice(i, 1);
+    }
+  }
+  atualizarCarrinho();
+}
     function finalizarPedido() {
       const pagamento = pagamentoSelect.value;
       const endereco = enderecoInput.value;
